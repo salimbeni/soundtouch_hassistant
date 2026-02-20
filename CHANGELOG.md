@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.1
+- Improved artwork detection when saving presets (now uses high-quality logos if available).
+
 ## 1.3.0
 - **Long-Press to Save**: Save the current station to a preset by holding the preset button (0.8s).
 - Visual feedback and animations during preset saving.

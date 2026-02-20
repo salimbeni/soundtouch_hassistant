@@ -498,6 +498,9 @@ class SoundTouchManager:
                         if not status or not status.ContentItem:
                             return {"success": False, "message": "Nichts wird gerade abgespielt"}
                         ci = status.ContentItem
+                        # Prioritize status.ArtUrl (Now Playing) over ci.ContainerArt
+                        art_url = status.ArtUrl if status.ArtUrl and status.ArtUrl != 'IMAGE_PRESENT' else ci.ContainerArt
+                        
                         preset = Preset(
                             presetId=int(preset_id),
                             source=ci.Source,
@@ -505,7 +508,7 @@ class SoundTouchManager:
                             sourceAccount=ci.SourceAccount,
                             isPresetable=True,
                             name=ci.Name or status.Track or "Stream",
-                            containerArt=ci.ContainerArt
+                            containerArt=art_url
                         )
                         client.StorePreset(preset)
                         return {"success": True, "message": f"Preset {preset_id} gespeichert"}
