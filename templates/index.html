@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>SoundTouch Controller</title>
+    <script>
+        // Home Assistant Ingress support
+        window.INGRESS_PATH = "{{ ingress_path }}";
+    </script>
+    <link rel="stylesheet" href="static/css/style.css?v=2">
+    <link rel="stylesheet" href="static/css/radio.css?v=1">
+    <meta name="description" content="Bose SoundTouch Lautsprecher Controller — Premium Web App">
+    <meta name="theme-color" content="#0a0e17">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+
+    <!-- Sidebar & overlay OUTSIDE app-shell -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-brand">SoundTouch</span>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-item" onclick="closeSidebar(); switchView('player');">
+                <span class="icon">🎵</span> Player
+            </div>
+            <div class="sidebar-item" onclick="closeSidebar(); switchView('devices');">
+                <span class="icon">🔊</span> Alle Lautsprecher
+            </div>
+            <div class="sidebar-item" onclick="closeSidebar(); showPresetsView();">
+                <span class="icon">⭐</span> Presets & Favoriten
+            </div>
+            <div class="sidebar-item" onclick="closeSidebar(); switchView('radio');">
+                <span class="icon">🌍</span> Radio Suche
+            </div>
+            <div class="sidebar-item" onclick="closeSidebar(); openPlayUrlModal();">
+                <span class="icon">🔗</span> URL abspielen
+            </div>
+        </div>
+    </nav>
+
+    <div class="app-shell">
+
+        <!-- ============ SPLASH SCREEN ============ -->
+        <div id="splash-screen" class="splash-screen">
+            <div class="splash-content">
+                <div class="splash-logo">SoundTouch</div>
+                <div class="splash-text">Premium Audio Experience</div>
+            </div>
+        </div>
+
+        <!-- ============ TAB BAR (Mobile/Global) ============ -->
+        <div class="top-bar" id="top-bar">
+            <button class="top-bar-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+            <span class="top-bar-title" id="top-bar-title"></span>
+            <!-- Removed redundant button: <button class="top-bar-btn" onclick="showPresetsView()" aria-label="Presets">⊞</button> -->
+            <div style="width: 40px;"></div> <!-- Spacer to balance layout if needed, or just remove btn -->
+        </div>
+
+        <!-- ============ VIEW: Player ============ -->
+        <div class="view active" id="view-player">
+            <div class="player-view">
+                <div class="player-bg" id="player-bg"></div>
+                <div class="player-content">
+                    <div class="player-status" id="player-status">Lautsprecher ist zur Wiedergabe bereit.</div>
+
+                    <div class="player-art-container" id="player-art-container">
+                        <div class="player-art-placeholder">🎵</div>
+                    </div>
+
+                    <div class="player-track-info">
+                        <div class="player-track-name" id="player-track-name">Bereit zur Wiedergabe</div>
+                        <div class="player-artist-name" id="player-artist-name"></div>
+                    </div>
+
+                    <div class="player-controls">
+                        <button class="ctrl-btn ctrl-btn-secondary" id="player-prev-btn" onclick="playerPrev()"
+                            aria-label="Zurück" style="display:none">⏮</button>
+                        <button class="ctrl-btn ctrl-btn-primary" id="player-play-btn" onclick="playerPlayPause()"
+                            aria-label="Play/Pause">▶</button>
+                        <button class="ctrl-btn ctrl-btn-secondary" id="player-next-btn" onclick="playerNext()"
+                            aria-label="Weiter" style="display:none">⏭</button>
+                    </div>
+
+                    <div class="volume-section">
+                        <div class="volume-control-row">
+                            <button class="volume-btn" onclick="changeVolume(-5)">-</button>
+                            <span class="volume-icon" id="player-volume-icon" onclick="playerMuteToggle()">🔊</span>
+                            <div class="volume-slider-track" id="volume-slider-track">
+                                <div class="volume-slider-fill" id="volume-slider-fill" style="width: 30%"></div>
+                            </div>
+                            <button class="volume-btn" onclick="changeVolume(5)">+</button>
+                        </div>
+                        <span class="volume-value" id="volume-value">30</span>
+
+                        <div class="player-group-volumes" id="player-group-volumes">
+                            <!-- Dynamically rendered individual volume sliders -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ VIEW: Devices ============ -->
+        <div class="view" id="view-devices">
+            <div class="devices-view">
+                <div class="devices-header">
+                    <h2>Meine Lautsprecher</h2>
+                    <p>Tippe auf einen Lautsprecher um ihn zu steuern</p>
+                </div>
+
+                <div class="add-device-section">
+                    <div class="add-device-row">
+                        <input type="text" class="add-device-input" id="add-device-ip"
+                            placeholder="IP-Adresse (z.B. 192.168.1.50)">
+                        <button class="add-device-btn" onclick="submitAddDevice()">Hinzufügen</button>
+                        <button class="help-btn" onclick="openHelpModal()" title="Hilfe zur Einrichtung">?</button>
+                    </div>
+                </div>
+
+                <!-- Help Modal -->
+                <div class="modal-overlay" id="help-modal-overlay" onclick="closeHelpModal()">
+                    <div class="modal" onclick="event.stopPropagation()">
+                        <div class="modal-header">
+                            <h3>Neuen Lautsprecher verbinden</h3>
+                            <button class="modal-close" onclick="closeHelpModal()">✕</button>
+                        </div>
+                        <div class="modal-content">
+                            <p>Um einen neuen SoundTouch-Lautsprecher mit Ihrem WLAN zu verbinden, benötigen Sie die
+                                offizielle <strong>Bose SoundTouch App</strong> oder ein USB-Kabel.</p>
+                            <ol style="margin-top:10px; padding-left:20px; color:var(--text-secondary);">
+                                <li style="margin-bottom:8px;">Laden Sie die SoundTouch App auf Ihr Smartphone oder
+                                    Tablet.</li>
+                                <li style="margin-bottom:8px;">Folgen Sie den Anweisungen in der App, um den
+                                    Lautsprecher ins WLAN einzubinden.</li>
+                                <li>Sobald der Lautsprecher im Netzwerk ist, wird er hier automatisch erkannt.</li>
+                            </ol>
+                            <div style="margin-top:20px; font-size:0.9rem; color:var(--text-tertiary);">
+                                Alternativ können Sie die IP-Adresse manuell eingeben, falls der Lautsprecher nicht
+                                automatisch erscheint.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-list" id="device-list">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ VIEW: Radio Search ============ -->
+        <div class="view" id="view-radio">
+            <div class="radio-view">
+                <div class="radio-header">
+                    <div class="radio-source-toggle">
+                        <button class="source-tab active" id="tab-tunein"
+                            onclick="switchRadioSource('tunein')">TuneIn</button>
+                        <button class="source-tab" id="tab-radiobrowser"
+                            onclick="switchRadioSource('radiobrowser')">Radio Browser</button>
+                    </div>
+                    <div class="radio-search-bar">
+                        <input type="text" id="radio-search-input" placeholder="Sender suchen..."
+                            onkeyup="handleRadioInput(event)">
+                        <button class="radio-clear-btn" id="radio-clear-btn" onclick="clearRadioSearch()"
+                            style="display:none;">✕</button>
+                        <button class="radio-search-btn" onclick="searchRadio()">🔍</button>
+                    </div>
+                </div>
+
+                <div class="radio-results" id="radio-results">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📻</div>
+                        <div class="empty-state-text">Suche nach Radiosendern aus der ganzen Welt.</div>
+                        <div class="suggestion-chips" id="radio-chips">
+                            <span class="chip" onclick="searchRadio('Jazz')">Jazz</span>
+                            <span class="chip" onclick="searchRadio('News')">News</span>
+                            <span class="chip" onclick="searchRadio('Rock')">Rock</span>
+                            <span class="chip" onclick="searchRadio('SRF')">SRF</span>
+                            <span class="chip" onclick="searchRadio('SWR')">SWR</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail View Removed -->
+
+        <!-- ============ VIEW: Presets & Favorites ============ -->
+        <div class="view" id="view-presets">
+            <div class="presets-view">
+                <div class="presets-header">
+                    <!-- Removed H2 as requested -->
+                </div>
+
+                <div class="preset-list" id="preset-list">
+                    <!-- Dynamically rendered -->
+                </div>
+
+                <div class="favorites-section">
+                    <div class="favorites-header">
+                        <span class="favorites-title">Favoriten</span>
+                        <button class="add-fav-btn" onclick="openAddFavoriteModal()"
+                            aria-label="Favorit hinzufügen">+</button>
+                    </div>
+                    <div id="favorites-list-items">
+                        <!-- Dynamically rendered -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end .app-shell -->
+
+    <!-- ============ Tab Bar (replaces page dots + bottom bar) ============ -->
+    <nav class="tab-bar" id="tab-bar">
+        <button class="tab-btn active" data-view="player" onclick="switchView('player')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="18" r="4" />
+                <path d="M16 18V2l6 3" />
+            </svg>
+            <span class="tab-label">Player</span>
+        </button>
+        <button class="tab-btn" data-view="devices" onclick="switchView('devices')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="2" />
+                <circle cx="12" cy="14" r="4" />
+                <line x1="12" y1="6" x2="12.01" y2="6" />
+            </svg>
+            <span class="tab-label">Geräte</span>
+        </button>
+
+        <button class="tab-btn" data-view="radio" onclick="switchView('radio')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="2"></circle>
+                <path
+                    d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.48m12.72-4.24a10 10 0 0 1 0 14.14m-16.96.01a10 10 0 0 1 0-14.15">
+                </path>
+            </svg>
+            <span class="tab-label">Radio</span>
+        </button>
+        <!-- Detail Tab Removed -->
+        <button class="tab-btn" data-view="presets" onclick="showPresetsView()">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polygon
+                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            <span class="tab-label">Presets</span>
+        </button>
+    </nav>
+
+    <!-- ============ Modals ============ -->
+
+    <!-- Zone Modal -->
+    <!-- Multiroom / Zone Modal -->
+    <div class="modal-overlay" id="modal-multiroom">
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <div class="modal-header">
+                <h3>Multiroom Gruppen</h3>
+                <button class="modal-close" onclick="closeModal('modal-multiroom')">✕</button>
+            </div>
+            <div class="modal-content">
+                <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:16px;">
+                    Wähle Lautsprecher, die mit <strong id="multiroom-master-name"></strong> spielen sollen.
+                </p>
+                <div id="multiroom-list" class="multiroom-list">
+                    <!-- Dynamically rendered -->
+                </div>
+                <button class="btn-primary full-width" style="margin-top:16px;"
+                    onclick="saveMultiroom()">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Source Selection Modal -->
+    <div class="modal-overlay" id="modal-source">
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <div class="modal-header">
+                <h3>Quelle wählen</h3>
+                <button class="modal-close" onclick="closeModal('modal-source')">✕</button>
+            </div>
+            <div class="modal-content">
+                <div class="source-grid">
+                    <button class="source-option" onclick="selectSource('AUX')">
+                        <div class="source-icon">🔌</div>
+                        <div class="source-label">AUX</div>
+                    </button>
+                    <button class="source-option" onclick="selectSource('BLUETOOTH')">
+                        <div class="source-icon">🔵</div>
+                        <div class="source-label">Bluetooth</div>
+                    </button>
+                    <button class="source-option" onclick="selectSource('AIRPLAY')">
+                        <div class="source-icon">📡</div>
+                        <div class="source-label">AirPlay</div>
+                    </button>
+                    <button class="source-option" onclick="selectSource('INTERNET_RADIO')">
+                        <div class="source-icon">🌐</div>
+                        <div class="source-label">Radio</div>
+                    </button>
+                    <button class="source-option" onclick="selectSource('SPOTIFY')">
+                        <div class="source-icon">🎧</div>
+                        <div class="source-label">Spotify</div>
+                    </button>
+                    <button class="source-option" onclick="selectSource('AIRPLAY')">
+                        <div class="source-icon">🍎</div>
+                        <div class="source-label">AirPlay</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Add Favorite Modal -->
+    <div class="modal-overlay" id="modal-add-fav">
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <div class="modal-title">Favorit hinzufügen</div>
+            <input type="text" class="modal-input" id="fav-name-input" placeholder="Name">
+            <input type="text" class="modal-input" id="fav-url-input" placeholder="Stream URL">
+            <!-- Hidden fields for TuneIn metadata -->
+            <input type="hidden" id="fav-image-input">
+            <input type="hidden" id="fav-guide-id-input">
+            <input type="hidden" id="fav-type-input" value="url">
+            <button class="modal-btn-primary" onclick="submitAddFavorite()">Speichern</button>
+            <button class="modal-btn-secondary" onclick="closeAddFavoriteModal()">Abbrechen</button>
+        </div>
+    </div>
+
+    <!-- ============ MODAL: Settings ============ -->
+    <div class="modal-overlay" id="modal-settings" onclick="closeModal('modal-settings')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Einstellungen</h3>
+                <button class="modal-close" onclick="closeModal('modal-settings')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="settings-tab active" onclick="switchSettingsTab('general')">Allgemein</button>
+                    <button class="settings-tab" onclick="switchSettingsTab('audio')">Audio</button>
+                </div>
+
+                <div id="settings-tab-general" class="settings-pane active">
+                    <div class="input-group">
+                        <label>Name</label>
+                        <div class="input-row">
+                            <input type="text" id="settings-name" class="modal-input">
+                            <button class="btn-primary" onclick="saveDeviceName()">Speichern</button>
+                        </div>
+                    </div>
+
+                    <div class="info-table">
+                        <div class="info-row">
+                            <span class="info-label">IP-Adresse</span>
+                            <span class="info-value" id="settings-ip">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">SoundTouch ID</span>
+                            <span class="info-value" id="settings-id">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Typ</span>
+                            <span class="info-value" id="settings-type">-</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:24px; border-top:1px solid var(--border-subtle); padding-top:16px;">
+                        <button class="btn-danger full-width" onclick="rebootDevice()">Lautsprecher neu starten</button>
+                    </div>
+                </div>
+
+                <div id="settings-tab-audio" class="settings-pane">
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <label>Bass</label>
+                            <span id="val-bass">0</span>
+                        </div>
+                        <input type="range" id="range-bass" min="-10" max="10" step="1"
+                            oninput="updateRangeVal('bass', this.value)" onchange="saveAudioSettings()">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <label>Treble</label>
+                            <span id="val-treble">0</span>
+                        </div>
+                        <input type="range" id="range-treble" min="-10" max="10" step="1"
+                            oninput="updateRangeVal('treble', this.value)" onchange="saveAudioSettings()">
+                    </div>
+
+                    <p class="hint-text">Nicht alle Lautsprecher unterstützen Audio-Einstellungen.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Play URL Modal -->
+    <div class="modal-overlay" id="modal-play-url" onclick="closeModal('modal-play-url')">
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <div class="modal-title">URL abspielen</div>
+            <input type="text" class="modal-input" id="play-url-input" placeholder="Stream URL (http://...)">
+            <input type="text" class="modal-input" id="play-url-title" placeholder="Titel (optional)">
+            <button class="modal-btn-primary" onclick="submitPlayUrl()">Abspielen</button>
+            <button class="modal-btn-secondary" onclick="closePlayUrlModal()">Abbrechen</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Personalization Modal -->
+    <div class="modal-overlay" id="modal-welcome">
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <div class="modal-title">Willkommen!</div>
+            <p style="text-align:center; color:var(--text-secondary); margin-bottom:20px;">
+                Wie dürfen wir dich begrüßen?
+            </p>
+            <input type="text" class="modal-input" id="welcome-name-input" placeholder="Dein Name">
+            <button class="modal-btn-primary" onclick="saveWelcomeName()">Los geht's</button>
+            <button class="modal-btn-secondary" onclick="closeModal('modal-welcome')">Später</button>
+        </div>
+    </div>
+
+    <!-- Guided Start Wizard -->
+    <div class="modal-overlay" id="modal-wizard">
+        <div class="modal-sheet wizard-sheet">
+            <div class="modal-handle"></div>
+
+            <!-- Step 1: Select Devices -->
+            <div class="wizard-step active" id="wizard-step-1">
+                <div class="modal-title">Wo möchtest du hören?</div>
+                <p class="wizard-subtitle">Wähle einen oder mehrere Lautsprecher</p>
+
+                <div class="wizard-device-list" id="wizard-device-list">
+                    <!-- Loaded via JS -->
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+
+                <div class="wizard-actions">
+                    <button class="modal-btn-secondary" onclick="closeModal('modal-wizard')">Abbrechen</button>
+                    <button class="modal-btn-primary" onclick="wizardNextStep()">Weiter</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Select Content -->
+            <div class="wizard-step" id="wizard-step-2">
+                <div class="modal-title">Was möchtest du hören?</div>
+                <p class="wizard-subtitle">Wähle einen Favoriten oder Sender</p>
+
+                <div class="wizard-content-list" id="wizard-content-list">
+                    <!-- Loaded via JS -->
+                </div>
+
+                <div class="wizard-actions">
+                    <button class="modal-btn-secondary" onclick="wizardPrevStep()">Zurück</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- App JS -->
+    <script src="static/js/app.js"></script>
+    <script>
+        // Player control shortcuts
+        function playerPlayPause() {
+            const d = getSelectedDevice();
+            if (d) apiControl(d.id, 'play_pause');
+        }
+        function playerPrev() {
+            const d = getSelectedDevice();
+            if (d) apiControl(d.id, 'prev');
+        }
+        function playerNext() {
+            const d = getSelectedDevice();
+            if (d) apiControl(d.id, 'next');
+        }
+        function playerMuteToggle() {
+            const d = getSelectedDevice();
+            if (d) {
+                const newVol = d.volume > 0 ? 0 : 30;
+                apiControl(d.id, 'volume', newVol);
+            }
+        }
+
+        // Close sidebar on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeSidebar();
+        });
+    </script>
+
+</body>
+
+</html>

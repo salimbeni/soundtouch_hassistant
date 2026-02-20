@@ -1,0 +1,26 @@
+name: "SoundTouch App"
+description: "A modern web interface for your Bose SoundTouch speakers."
+version: "1.0.0"
+slug: "soundtouch_app"
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+init: false
+homeassistant: "0.92.0"
+ingress: true
+ingress_port: 5001
+panel_icon: "mdi:speaker-wireless"
+panel_title: "SoundTouch"
+network_mode: host
+map:
+  - config:rw
+  - addon_config:rw
+  - ssl:ro
+  - media:rw
+  - share:rw
+  - data:rw
+options: {}
+schema: {}

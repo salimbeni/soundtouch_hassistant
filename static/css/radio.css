@@ -1,0 +1,284 @@
+/* Radio View Specific Styles */
+.radio-view {
+    padding-bottom: 90px;
+    padding-top: 70px;
+    /* Push content below fixed top bar */
+    background: var(--bg-primary);
+    /* Ensure consistent background */
+    min-height: 100vh;
+}
+
+.radio-header {
+    background: rgba(10, 14, 23, 0.95);
+    /* Better contrast */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    position: sticky;
+    top: 60px;
+    /* Match approximately top bar height */
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Center content */
+}
+
+/* Hide the h2 if top bar handles title, but user asked for "mittig grösser", maybe they meant the search input */
+.radio-header h2 {
+    display: none;
+    /* Hide duplicate title */
+}
+
+.radio-search-bar {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    max-width: 400px;
+    /* Constrain width for better look */
+    margin: 10px auto 0;
+}
+
+#radio-search-input {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-full);
+    /* Rounder looks more modern */
+    padding: 14px 20px;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    /* Larger font */
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+#radio-search-input:focus {
+    background: var(--bg-card-hover);
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.radio-search-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-full);
+    width: 50px;
+    height: 50px;
+    color: var(--bg-primary);
+    /* Dark icon on bright bg */
+    font-size: 1.3rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radio-search-btn:hover {
+    background: var(--accent-hover);
+    transform: scale(1.05);
+}
+
+.radio-results {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.radio-item {
+    display: flex;
+    align-items: center;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.radio-item:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.radio-img-col {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    background: #000;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    flex-shrink: 0;
+    border: 1px solid var(--border-subtle);
+}
+
+.radio-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.radio-logo-placeholder {
+    font-size: 1.8rem;
+    opacity: 0.6;
+}
+
+.radio-info-col {
+    flex: 1;
+    overflow: hidden;
+}
+
+.radio-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-primary);
+}
+
+.radio-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.radio-bitrate {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+.radio-play-btn {
+    background: transparent;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 12px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.radio-play-btn:hover {
+    background: var(--accent);
+    color: var(--bg-primary);
+    transform: scale(1.1);
+}
+
+.radio-fav-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    /* Default subtle */
+    font-size: 1.6rem;
+    padding: 8px;
+    margin-left: 4px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.radio-fav-btn:hover {
+    color: #e91e63;
+    /* Pink for heart hover */
+}
+
+/* Chips */
+.suggestion-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.chip {
+    background: var(--bg-glass);
+    padding: 8px 18px;
+    border-radius: var(--radius-full);
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.chip:hover {
+    background: var(--bg-glass-strong);
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+}
+
+.chip:active {
+    background: var(--accent);
+    color: var(--bg-primary);
+    border-color: var(--accent);
+}
+
+/* Empty State */
+.empty-state {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+
+.empty-state-text {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}/* Add to radio.css */
+
+.radio-search-bar {
+    position: relative;
+    /* For absolute positioning if needed, or flex */
+}
+
+/* Update radio-search-input padding to make room for clear btn if needed */
+#radio-search-input {
+    padding-right: 40px;
+    /* Space for clear button */
+}
+
+.radio-clear-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 10px;
+    display: none;
+    /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.radio-clear-btn:hover {
+    color: var(--text-primary);
+}
