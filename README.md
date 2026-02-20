@@ -1,44 +1,48 @@
-# SoundTouch Control App
+# SoundTouch Controller — Premium Web App
 
-A local web application to control Bose SoundTouch speakers. This app allows you to:
-- Discover devices on your network.
-- Play music from URLs.
-- Group speakers into zones (multi-room audio).
-- Save and manage favorite streams.
+Eine moderne, intuitive Weboberfläche zur Steuerung deiner Bose SoundTouch Lautsprecher. Diese App bietet ein erstklassiges Erlebnis mit personalisierten Features und einer optimierten Benutzeroberfläche.
 
-## Prerequisites
-- Python 3
-- Bose SoundTouch speakers on the same network.
+## ✨ Features
 
-## Installation
+- **Personalisiertes Erlebnis**: Individuelle Begrüßung und Gerätenamen pro Browser-Sitzung.
+- **Geführter Start (Wizard)**: Ein smarter Einrichtungsassistent beim Starten der App, um Lautsprecher zu gruppieren und Musik mit einem Klick zu starten.
+- **Redesigned Grid**: Optimierte 2x3 Ansicht für deine Presets und Favoriten mit Sender-Logos.
+- **Multi-Room Audio**: Erstelle und verwalte Zonen (Gruppen) für synchronisierte Wiedergabe in mehreren Räumen.
+- **Umfangreiche Musiksuche**: Integration von TuneIn und RadioBrowser für tausende Radiosender weltweit.
+- **Dark Mode Design**: Ein hochwertiges, dunkles Design mit flüssigen Animationen und Glasmorphismus-Effekten.
 
-1.  Navigate to the project directory:
-    ```bash
-    cd "/Users/alessandrosalimbeni/Soundtouch App"
-    ```
+## 🏠 Home Assistant Integration (Empfohlen)
 
-2.  Install dependencies:
-    ```bash
-    pip3 install -r requirements.txt
-    ```
+Diese App ist vollständig für **Home Assistant** optimiert und kann als lokales Add-on installiert werden.
 
-## Usage
+- **Ingress Support**: Nahtlose Einbindung direkt in die Home Assistant Seitenleiste.
+- **Dauerhafter Speicher**: Favoriten und Einstellungen bleiben sicher in Home Assistant gespeichert.
 
-1.  Start the application:
-    ```bash
-    python3 app.py
-    ```
+👉 Siehe **[INSTALL_HA.md](INSTALL_HA.md)** für die kinderleichte Installationsanleitung via GitHub.
 
-2.  Open your browser and go to:
-    [http://localhost:5000](http://localhost:5000)
+## 🛠 Lokale Installation (Entwickler)
 
-## Features
+Wenn du die App manuell auf einem Computer oder Raspberry Pi (ohne Home Assistant) ausführen möchtest:
 
--   **Add Device**: If devices aren't auto-discovered, enter their IP address manually.
--   **Play URL**: Enter a stream URL (e.g., MP3 or PLS link) and select a device to play.
--   **Favorites**: Save your favorite stream URLs for quick access.
--   **Zones**: Click "Create Zone" on a speaker to group others with it. Use "Ungroup" on the master speaker to dissolve the zone.
+1. **Abhängigkeiten installieren**:
+   ```bash
+   pip3 install -r requirements.txt
+   ```
 
-## Notes
--   The app needs to run on a machine connected to the same WiFi/LAN as the speakers.
--   Ensure no firewall blocks port 5000 or the discovery protocols.
+2. **App starten**:
+   ```bash
+   python3 app.py
+   ```
+
+3. **Öffnen**:
+   Gehe in deinem Browser auf `http://localhost:5001` (oder die IP deines Geräts).
+
+## 📝 Voraussetzungen
+
+- Python 3.9+
+- Bose SoundTouch Lautsprecher im selben Netzwerk.
+
+## 💡 Tipps
+- Die App findet deine Lautsprecher im Netzwerk automatisch (Discovery).
+- Falls ein Gerät nicht gefunden wird, kannst du es manuell über die IP-Adresse hinzufügen.
+- Du kannst eigene Stream-URLs (MP3, PLS, M3U) als Favoriten speichern.
