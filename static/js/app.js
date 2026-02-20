@@ -1013,6 +1013,34 @@ function updateBottomBar() {
 // --- Detail View Removed ---
 
 // --- Presets View ---
+let presetPressTimer = null;
+let isLongPress = false;
+
+function handlePresetPressStart(deviceId, presetId, element) {
+    isLongPress = false;
+    element.classList.add('pressing');
+
+    presetPressTimer = setTimeout(() => {
+        isLongPress = true;
+        element.classList.remove('pressing');
+        element.classList.add('saved');
+        setTimeout(() => element.classList.remove('saved'), 1000);
+
+        showToast(`Speichere Preset ${presetId}...`);
+        apiStorePreset(deviceId, presetId);
+    }, 800);
+}
+
+function handlePresetPressEnd(deviceId, presetId, element) {
+    clearTimeout(presetPressTimer);
+    element.classList.remove('pressing');
+
+    if (!isLongPress) {
+        apiPlayPreset(deviceId, presetId);
+    }
+    isLongPress = false;
+}
+
 function showPresetsView() {
     renderPresets();
     renderFavorites();
@@ -1044,9 +1072,16 @@ function renderPresets() {
         // Small number badge
         const numberBadge = `<div class="preset-card-badge">${i}</div>`;
 
+        const pressEvents = deviceId ? `
+            onmousedown="handlePresetPressStart('${deviceId}', ${i}, this)" 
+            onmouseup="handlePresetPressEnd('${deviceId}', ${i}, this)"
+            onmouseleave="clearTimeout(presetPressTimer); this.classList.remove('pressing')"
+            ontouchstart="handlePresetPressStart('${deviceId}', ${i}, this); event.preventDefault();"
+            ontouchend="handlePresetPressEnd('${deviceId}', ${i}, this); event.preventDefault();"
+        ` : '';
+
         return `
-        <div class="preset-card-new ${!hasContent ? 'empty' : ''}" 
-             onclick="${hasContent && deviceId ? `apiPlayPreset('${deviceId}', ${i})` : ''}">
+        <div class="preset-card-new ${!hasContent ? 'empty' : ''}" ${pressEvents}>
              ${hasContent ? thumbContent : '<div class="preset-card-icon" style="opacity:0.3">+</div>'}
              ${hasContent ? numberBadge : ''}
              <div class="preset-card-overlay">

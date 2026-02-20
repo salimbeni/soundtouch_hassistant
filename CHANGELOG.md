@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0
+- **Long-Press to Save**: Save the current station to a preset by holding the preset button (0.8s).
+- Visual feedback and animations during preset saving.
+
 ## 1.2.2
 - Fixed raw HTML display in "empty favorites" message.
 
