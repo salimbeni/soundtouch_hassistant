@@ -1070,9 +1070,9 @@ function renderFavorites() {
 
     if (state.favorites.length === 0) {
         container.innerHTML = `
-        < div style = "text-align:center; color: var(--text-tertiary); padding: 20px; font-size: 0.85rem;" >
+        <div style="text-align:center; color: var(--text-tertiary); padding: 20px; font-size: 0.85rem;">
             Zum Speichern eines Favoriten tippen...
-            </div > `;
+        </div>`;
         return;
     }
 

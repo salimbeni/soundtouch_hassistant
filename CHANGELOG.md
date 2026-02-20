@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.2
+- Fixed raw HTML display in "empty favorites" message.
+
 ## 1.2.1
 - Added `CHANGELOG.md` support for Home Assistant.
 
