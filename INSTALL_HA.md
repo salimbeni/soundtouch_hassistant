@@ -54,6 +54,29 @@ Nutze diese Methode, wenn du keinen GitHub-Account nutzen möchtest.
    - Klicke auf **STARTEN**.
    - Nach wenigen Sekunden kannst du über den Button **BENUTZEROBERFLÄCHE ÖFFNEN** oder über den Reiter in der Seitenleiste auf die App zugreifen.
 
+## Wartung & Updates
+
+### 1. Neue Version auf GitHub laden
+Wenn du Änderungen an der App vornimmst (oder ich sie für dich mache), kannst du sie so veröffentlichen:
+
+1.  **Version erhöhen**: Ändere die `version` in der `config.yaml` (z.B. von `1.0.0` auf `1.0.1`).
+2.  **Änderungen committen & pushen**:
+    ```bash
+    git add .
+    git commit -m "Beschreibung der Änderung"
+    git push
+    ```
+
+### 2. In Home Assistant aktualisieren
+Home Assistant prüft regelmäßig auf Updates. Du kannst es aber beschleunigen:
+
+1.  Gehe zum **Add-on Store**.
+2.  Klicke oben rechts auf die drei Punkte (...) > **Check for updates**.
+3.  Gehe zurück zur **SoundTouch App** Add-on Seite. Dort erscheint nun ein **UPDATE** Button.
+4.  Klicke auf **Update** und starte das Add-on ggf. neu.
+
+---
+
 ## Tipps
 - Die App nutzt den `host` Netzwerkmodus, um deine Lautsprecher im Heimnetzwerk automatisch zu finden.
 - Deine Favoriten werden sicher in Home Assistant gespeichert, auch wenn du das Add-on aktualisierst.
