@@ -75,6 +75,11 @@
                 <div class="header-dots">••</div>
             </div>
             <div class="content-scroll">
+                <div class="source-toggle">
+                    <div class="toggle-btn active" id="btn-src-tunein" onclick="setRadioSource('tunein')">TuneIn</div>
+                    <div class="toggle-btn" id="btn-src-radiobrowser" onclick="setRadioSource('radiobrowser')">Radio-Browser</div>
+                </div>
+
                 <div class="search-container">
                     <div class="search-box">
                         <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -84,9 +89,9 @@
                 </div>
                 
                 <div class="filter-row">
-                    <div class="filter-bar">
+                    <div class="filter-bar clickable" onclick="openFilterModal()">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-                        <span>CH · Name (A-Z)</span>
+                        <span id="active-filters-label">Alle Filter</span>
                     </div>
                 </div>
 
@@ -208,6 +213,41 @@
             <input type="hidden" id="fav-type-input" value="url">
             <button class="modal-btn-primary" onclick="submitAddFavorite()">Speichern</button>
             <button class="modal-btn-secondary" onclick="closeModal('modal-add-fav')">Abbrechen</button>
+        </div>
+    </div>
+
+    <!-- FILTER MODAL -->
+    <div class="modal-overlay" id="modal-filter" onclick="closeModal('modal-filter')">
+        <div class="modal-sheet bottom-sheet" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <h3 class="sheet-title">Suche Filtern</h3>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:4px; display:block;">Land</label>
+                <select id="filter-country" class="modal-input" style="appearance:none;">
+                    <option value="">Alle Länder</option>
+                    <option value="CH">Schweiz</option>
+                    <option value="DE">Deutschland</option>
+                    <option value="AT">Österreich</option>
+                    <option value="IT">Italien</option>
+                    <option value="FR">Frankreich</option>
+                    <option value="GB">Großbritannien</option>
+                    <option value="US">USA</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 24px;">
+                <label style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:4px; display:block;">Sprache</label>
+                <select id="filter-language" class="modal-input" style="appearance:none;">
+                    <option value="">Alle Sprachen</option>
+                    <option value="german">Deutsch</option>
+                    <option value="english">Englisch</option>
+                    <option value="italian">Italienisch</option>
+                    <option value="french">Französisch</option>
+                </select>
+            </div>
+            
+            <button class="modal-btn-primary" onclick="applyFilters()">Anwenden</button>
         </div>
     </div>
 

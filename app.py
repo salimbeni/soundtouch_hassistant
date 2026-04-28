@@ -170,26 +170,39 @@ def device_mute(device_id):
 
 @app.route('/api/radio/search', methods=['GET'])
 def radio_search():
-    query = request.args.get('q')
-    country = request.args.get('country')
+    query = request.args.get('q', '')
+    country = request.args.get('country', '')
+    language = request.args.get('language', '')
     
-    if not query and not country:
+    if not query and not country and not language:
          # Default top stations if no query
          return jsonify(radio_api.get_top_stations(limit=20))
          
-    if country and not query:
-        return jsonify(radio_api.get_top_stations(country_code=country, limit=20))
+    if not query and (country or language):
+        return jsonify(radio_api.get_top_stations(country_code=country, language=language, limit=20))
 
-    return jsonify(radio_api.search_stations(query))
+    return jsonify(radio_api.search_stations(query=query, countrycode=country, language=language, limit=20))
 
 # ---- TuneIn API endpoints ----
 
 @app.route('/api/tunein/search', methods=['GET'])
 def tunein_search():
     query = request.args.get('q', '')
-    if not query:
+    country = request.args.get('country', '')
+    language = request.args.get('language', '')
+    
+    # For TuneIn, we just append the country and language to the query string
+    # since it does not support dedicated parameters in this endpoint easily
+    full_query = query
+    if country:
+        full_query += f" {country}"
+    if language:
+        full_query += f" {language}"
+    full_query = full_query.strip()
+        
+    if not full_query:
         return jsonify(tunein_api.get_popular())
-    return jsonify(tunein_api.search(query))
+    return jsonify(tunein_api.search(full_query))
 
 @app.route('/api/tunein/browse', methods=['GET'])
 def tunein_browse():

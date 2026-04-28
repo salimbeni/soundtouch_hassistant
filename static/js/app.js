@@ -348,8 +348,38 @@ function initVolumeSlider() {
     document.addEventListener('touchend', stopDrag);
 }
 
-/* --- Radio Search --- */
+/* --- Radio Search & Filters --- */
 let searchTimeout = null;
+
+function setRadioSource(source) {
+    state.radioSource = source;
+    document.getElementById('btn-src-tunein').classList.toggle('active', source === 'tunein');
+    document.getElementById('btn-src-radiobrowser').classList.toggle('active', source === 'radiobrowser');
+    searchRadio();
+}
+
+function openFilterModal() {
+    document.getElementById('modal-filter').classList.add('open');
+}
+
+function applyFilters() {
+    closeModal('modal-filter');
+    
+    const countryVal = document.getElementById('filter-country').value;
+    const langVal = document.getElementById('filter-language').value;
+    
+    let labels = [];
+    if (countryVal) labels.push(countryVal);
+    if (langVal) {
+        const langText = document.getElementById('filter-language').options[document.getElementById('filter-language').selectedIndex].text;
+        labels.push(langText);
+    }
+    
+    document.getElementById('active-filters-label').textContent = labels.length > 0 ? labels.join(' · ') : 'Alle Filter';
+    
+    searchRadio();
+}
+
 function handleRadioInput(event) {
     const val = event.target.value;
     document.getElementById('radio-clear-btn').style.display = val ? 'block' : 'none';
@@ -368,21 +398,28 @@ function clearRadioSearch() {
 
 async function searchRadio() {
     const query = document.getElementById('radio-search-input').value;
+    const country = document.getElementById('filter-country') ? document.getElementById('filter-country').value : '';
+    const language = document.getElementById('filter-language') ? document.getElementById('filter-language').value : '';
+    
     const container = document.getElementById('radio-results');
     
-    if (!query) {
-        try {
-            const res = await fetch(getApiUrl(`/api/tunein/search?q=`));
-            const stations = await res.json();
-            renderRadioResults(stations);
-        } catch(e){}
-        return;
-    }
+    let endpoint = state.radioSource === 'radiobrowser' ? '/api/radio/search' : '/api/tunein/search';
+    let params = new URLSearchParams();
+    
+    if (query) params.append('q', query);
+    if (country) params.append('country', country);
+    if (language) params.append('language', language);
+    
+    let url = getApiUrl(endpoint) + '?' + params.toString();
 
-    container.innerHTML = `<div class="empty-state">Lade...</div>`;
+    if (!query && !country && !language && state.radioSource === 'tunein') {
+        // Special case: empty everything on TuneIn defaults to popular
+    } else {
+        container.innerHTML = `<div class="empty-state">Lade...</div>`;
+    }
     
     try {
-        const res = await fetch(getApiUrl(`/api/tunein/search?q=${encodeURIComponent(query)}`));
+        const res = await fetch(url);
         const stations = await res.json();
         renderRadioResults(stations);
     } catch (e) {

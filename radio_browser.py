@@ -20,19 +20,25 @@ class RadioBrowser:
         # In a real robust app we might want to ping servers to find the fastest one on init
         # For now, we default to de1 as requested for EU focus
 
-    def search_stations(self, query, limit=20):
+    def search_stations(self, query, limit=20, countrycode=None, language=None):
         """
         Search for radio stations by name/tag.
         """
         endpoint = "/json/stations/search"
         
         params = {
-            'name': query,
             'limit': limit,
             'order': 'clickcount', # Show popular stations first
             'reverse': 'true',
             'hidebroken': 'true' # Don't show broken streams
         }
+        
+        if query:
+            params['name'] = query
+        if countrycode:
+            params['countrycode'] = countrycode
+        if language:
+            params['language'] = language
         
         # Try primary server
         try:
@@ -61,12 +67,8 @@ class RadioBrowser:
             })
         return results
 
-    def get_top_stations(self, country_code=None, limit=20):
-        """Get top stations possibly filtered by country"""
-        # API supports /json/stations/topclick/{limit}
-        # But to filter by country we might need search with empty name?
-        # Actually /json/stations/search supports countrycode param
-        
+    def get_top_stations(self, country_code=None, language=None, limit=20):
+        """Get top stations possibly filtered by country and language"""
         params = {
             'limit': limit,
             'order': 'clickcount',
@@ -76,5 +78,7 @@ class RadioBrowser:
         
         if country_code:
             params['countrycode'] = country_code
+        if language:
+            params['language'] = language
             
         return self._do_request(self.base_url + "/json/stations/search", params)
