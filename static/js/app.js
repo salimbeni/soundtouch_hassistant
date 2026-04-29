@@ -271,8 +271,14 @@ function playFavorite(idx) {
     if (!fav || !device) return;
 
     if (fav.type === 'tunein' && fav.guide_id) {
-        // Tunein special handler if needed, or fallback to URL
-        apiPlayUrl(device.id, '', fav.name); // Usually tunein needs custom endpoint, falling back to URL approach for now or adding TuneIn logic here.
+        fetch(getApiUrl('/api/tunein/play'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ device_id: device.id, guide_id: fav.guide_id, name: fav.name })
+        }).then(() => {
+            showToast('▶ ' + fav.name);
+            setTimeout(fetchDevices, 1500);
+        });
     } else {
         apiPlayUrl(device.id, fav.url, fav.name);
     }
@@ -490,18 +496,62 @@ function renderRadioResults(stations) {
     }
 
     container.innerHTML = stations.map(s => {
-        const img = s.image ? `<img src="${s.image}">` : `<div style="font-size:1.5rem">📻</div>`;
+        const img = s.image || s.favicon || '';
+        const imgHtml = img ? `<img src="${img}">` : `<div style="font-size:1.5rem">📻</div>`;
+        const nameEscaped = s.name.replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+        const urlEscaped = (s.url || '').replace(/'/g, "&apos;");
+        const guideEscaped = (s.guide_id || '').replace(/'/g, "&apos;");
+        const src = state.radioSource;
+        
         return `
-        <div class="radio-item" onclick="apiPlayUrl(getSelectedDevice()?.id, '', '${s.name.replace(/'/g, "&apos;")}')">
-            <div class="radio-img-col">${img}</div>
+        <div class="radio-item" onclick="playRadioStation('${src}', '${guideEscaped}', '${urlEscaped}', '${nameEscaped}', '${img}')">
+            <div class="radio-img-col">${imgHtml}</div>
             <div class="radio-info-col">
                 <div class="radio-name">${s.name}</div>
-                <div class="radio-meta">${s.now_playing || 'Internetradio'}</div>
+                <div class="radio-meta">${s.now_playing || s.tags || 'Internetradio'}</div>
             </div>
             <button class="radio-play-btn">▶</button>
         </div>
         `;
     }).join('');
+}
+
+function playRadioStation(source, guide_id, url, name, image) {
+    const device = getSelectedDevice();
+    if (!device) return;
+    
+    // Save to favorites
+    fetch(getApiUrl('/api/favorites'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, url, image, guide_id, type: source })
+    }).then(() => fetchFavorites());
+
+    if (source === 'tunein' && guide_id) {
+        state.isLoadingStream = true;
+        state.pendingStreamTitle = name;
+        updatePlayerView();
+        
+        fetch(getApiUrl('/api/tunein/play'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ device_id: device.id, guide_id: guide_id, name: name })
+        }).then(r => r.json()).then(res => {
+            if (res.success) {
+                showToast('▶ ' + name);
+                setTimeout(fetchDevices, 1500);
+            } else {
+                showToast('Fehler: ' + res.message, 'error');
+            }
+        }).catch(e => {
+            showToast('Fehler: ' + e.message, 'error');
+        }).finally(() => {
+            state.isLoadingStream = false;
+            updatePlayerView();
+        });
+    } else {
+        apiPlayUrl(device.id, url, name);
+    }
 }
 
 /* --- Settings View --- */
