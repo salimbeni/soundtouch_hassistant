@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SoundTouch Controller</title>
     <script>window.INGRESS_PATH = "{{ ingress_path }}";</script>
-    <link rel="stylesheet" href="static/css/style.css?v=3">
-    <meta name="theme-color" content="#3b5998">
+    <link rel="stylesheet" href="static/css/style.css?v=5">
+    <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
+    <div class="dynamic-bg" id="dynamic-bg"></div>
     <div class="app-shell">
         
         <!-- STARTSEITE VIEW -->
@@ -24,11 +25,48 @@
                     <span class="dropdown-icon">⌄</span>
                 </div>
                 <button class="power-btn" onclick="togglePower()">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0 M12 2v10"/></svg>
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0 M12 2v10"/></svg>
                 </button>
             </div>
             
             <div class="content-scroll">
+                
+                <div class="now-playing-hero">
+                    <div class="hero-art-container" id="hero-art-container">
+                        <img src="" id="hero-art" class="hero-art hidden" alt="Album Art">
+                        <div class="hero-art-placeholder" id="hero-art-placeholder">
+                            <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-info">
+                        <div id="hero-track" class="hero-track">Bereit</div>
+                        <div id="hero-artist" class="hero-artist">Keine Wiedergabe</div>
+                    </div>
+                    
+                    <div class="hero-controls">
+                        <button class="hero-ctrl" id="hero-prev" onclick="apiControl(getSelectedDevice()?.id, 'prev')" style="display:none">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                        </button>
+                        <button class="hero-ctrl play-btn" id="hero-play" onclick="playerPlayPause()">
+                            <svg id="icon-play" viewBox="0 0 24 24" width="32" height="32" fill="currentColor" style="display:none"><path d="M8 5v14l11-7z"/></svg>
+                            <svg id="icon-pause" viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        </button>
+                        <button class="hero-ctrl" id="hero-next" onclick="apiControl(getSelectedDevice()?.id, 'next')" style="display:none">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                        </button>
+                    </div>
+                    
+                    <div class="volume-bar">
+                        <button class="vol-icon" onclick="playerMuteToggle()" id="hero-volume-icon">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        </button>
+                        <div class="volume-slider-track" id="hero-volume-track">
+                            <div class="volume-slider-fill" id="hero-volume-fill" style="width: 30%"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="section-header">
                     <h2>Presets</h2>
                 </div>
@@ -37,32 +75,12 @@
                 </div>
 
                 <div class="section-header">
-                    <h2>Zuletzt gespielt / Favoriten</h2>
+                    <h2>Favoriten</h2>
                     <span class="chevron-right">›</span>
                 </div>
                 <div class="recent-scroll-area">
                     <div class="recent-list" id="favorites-list-items">
                         <!-- Favorites injected here -->
-                    </div>
-                </div>
-                
-                <!-- Player Controls (Floating at bottom of Startseite) -->
-                <div class="player-bar" id="player-bar">
-                    <div class="player-info">
-                        <div id="player-track-name" class="track-name">Bereit</div>
-                        <div id="player-artist-name" class="artist-name">Keine Wiedergabe</div>
-                    </div>
-                    <div class="player-controls">
-                        <button class="ctrl-btn" id="player-prev-btn" onclick="apiControl(getSelectedDevice()?.id, 'prev')" style="display:none">⏮</button>
-                        <button class="ctrl-btn play-btn" id="player-play-btn" onclick="playerPlayPause()">▶</button>
-                        <button class="ctrl-btn" id="player-next-btn" onclick="apiControl(getSelectedDevice()?.id, 'next')" style="display:none">⏭</button>
-                    </div>
-                </div>
-                
-                <div class="volume-bar">
-                    <button class="vol-icon" onclick="playerMuteToggle()" id="player-volume-icon">🔊</button>
-                    <div class="volume-slider-track" id="volume-slider-track">
-                        <div class="volume-slider-fill" id="volume-slider-fill" style="width: 30%"></div>
                     </div>
                 </div>
             </div>
@@ -71,8 +89,7 @@
         <!-- FINDEN VIEW -->
         <div class="view" id="view-radio">
             <div class="header main-header">
-                <div class="view-title">Internetradio</div>
-                <div class="header-dots">••</div>
+                <div class="view-title">Finden</div>
             </div>
             <div class="content-scroll">
                 <div class="source-toggle">
@@ -80,25 +97,23 @@
                     <div class="toggle-btn" id="btn-src-radiobrowser" onclick="setRadioSource('radiobrowser')">Radio-Browser</div>
                 </div>
 
-                <div class="search-container">
-                    <div class="search-box">
-                        <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input type="text" id="radio-search-input" placeholder="Sender suchen..." onkeyup="handleRadioInput(event)">
-                        <button id="radio-clear-btn" onclick="clearRadioSearch()" style="display:none;">✕</button>
-                    </div>
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="radio-search-input" placeholder="Sender oder Podcasts suchen..." onkeyup="handleRadioInput(event)">
+                    <button id="radio-clear-btn" onclick="clearRadioSearch()" style="display:none;">✕</button>
                 </div>
                 
-                <div class="filter-row">
-                    <div class="filter-bar clickable" onclick="openFilterModal()">
+                <div style="margin-bottom: 20px;">
+                    <div class="filter-bar" onclick="openFilterModal()">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-                        <span id="active-filters-label">Alle Filter</span>
+                        <span id="active-filters-label">Filter</span>
                     </div>
                 </div>
 
                 <div class="radio-list" id="radio-results">
                     <!-- Results injected here -->
                     <div class="empty-state">
-                        Suche nach Radiosendern oder verwende TuneIn.
+                        Suche nach Radiosendern oder durchstöbere TuneIn.
                     </div>
                 </div>
             </div>
@@ -112,34 +127,27 @@
             <div class="content-scroll settings-scroll">
                 
                 <div class="settings-section">
-                    <h3>Sprache</h3>
-                    <div class="settings-card">
-                        <div class="settings-row">
-                            <div class="settings-icon">🌐</div>
-                            <div class="settings-label">Deutsch</div>
-                            <div class="settings-chevron">⌄</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings-section">
-                    <h3>Geräte</h3>
+                    <h3>Geräte verwalten</h3>
                     <div class="settings-card clickable" onclick="openAddDeviceModal()">
                         <div class="settings-row">
-                            <div class="settings-icon action-icon">📶</div>
-                            <div class="settings-label action-text">Neuen Lautsprecher einrichten</div>
+                            <div class="settings-icon action-icon">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </div>
+                            <div class="settings-label">Lautsprecher hinzufügen</div>
                         </div>
                     </div>
                     <div class="settings-card clickable" onclick="rebootDevice()" style="margin-top:12px;">
                         <div class="settings-row">
-                            <div class="settings-icon action-icon">🔄</div>
-                            <div class="settings-label action-text">Lautsprecher neu starten</div>
+                            <div class="settings-icon action-icon">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                            </div>
+                            <div class="settings-label">Lautsprecher neu starten</div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="settings-section">
-                    <h3>Audio (Ausgewählter Lautsprecher)</h3>
+                    <h3>Klang (Aktuelles Gerät)</h3>
                     <div class="settings-card">
                         <div class="settings-row slider-row">
                             <label>Bass <span id="val-bass">0</span></label>
@@ -156,11 +164,21 @@
                 <div class="settings-section">
                     <div class="settings-card clickable danger-card" onclick="forgetDevice()">
                         <div class="settings-row">
-                            <div class="settings-label danger-text text-center" style="width:100%">Lautsprecher entfernen</div>
+                            <div class="settings-label danger-text text-center" style="width:100%">Gerät entfernen</div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- FLOATING MINI PLAYER FOR FINDEN & SETTINGS -->
+        <div class="floating-player" id="floating-player" onclick="switchView('startseite')">
+            <img src="" id="floating-art" class="floating-art" style="display:none">
+            <div class="floating-info">
+                <div class="floating-title" id="floating-title">Bereit</div>
+                <div class="floating-artist" id="floating-artist">Keine Wiedergabe</div>
+            </div>
+            <button class="floating-btn" id="floating-play" onclick="event.stopPropagation(); playerPlayPause()">▶</button>
         </div>
 
     </div>
@@ -169,7 +187,7 @@
     <nav class="bottom-nav">
         <div class="nav-item active" data-view="startseite" onclick="switchView('startseite')">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <span>Startseite</span>
+            <span>Jetzt läuft</span>
         </div>
         <div class="nav-item" data-view="radio" onclick="switchView('radio')">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -177,7 +195,7 @@
         </div>
         <div class="nav-item" data-view="settings" onclick="switchView('settings')">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            <span>Einstellungen</span>
+            <span>System</span>
         </div>
     </nav>
 
@@ -185,7 +203,7 @@
     <div class="modal-overlay" id="modal-device-selector" onclick="closeModal('modal-device-selector')">
         <div class="modal-sheet bottom-sheet" onclick="event.stopPropagation()">
             <div class="modal-handle"></div>
-            <h3 class="sheet-title">Lautsprecher wählen</h3>
+            <h3 class="sheet-title">Wiedergabe auf</h3>
             <div id="device-list" class="sheet-list">
                 <!-- Devices injected here -->
             </div>
@@ -195,24 +213,10 @@
     <!-- ADD DEVICE MODAL -->
     <div class="modal-overlay" id="modal-add-device" onclick="closeModal('modal-add-device')">
         <div class="modal-sheet center-sheet" onclick="event.stopPropagation()">
-            <h3>IP hinzufügen</h3>
-            <input type="text" id="add-device-ip" class="modal-input" placeholder="IP-Adresse (z.B. 192.168.1.50)">
-            <button class="modal-btn-primary" onclick="submitAddDevice()">Hinzufügen</button>
+            <h3 class="sheet-title">IP hinzufügen</h3>
+            <input type="text" id="add-device-ip" class="modal-input" placeholder="192.168.x.x">
+            <button class="modal-btn-primary" onclick="submitAddDevice()">Gerät verbinden</button>
             <button class="modal-btn-secondary" onclick="closeModal('modal-add-device')">Abbrechen</button>
-        </div>
-    </div>
-    
-    <!-- ADD FAV MODAL -->
-    <div class="modal-overlay" id="modal-add-fav" onclick="closeModal('modal-add-fav')">
-        <div class="modal-sheet center-sheet" onclick="event.stopPropagation()">
-            <h3>Favorit hinzufügen</h3>
-            <input type="text" class="modal-input" id="fav-name-input" placeholder="Name">
-            <input type="text" class="modal-input" id="fav-url-input" placeholder="Stream URL">
-            <input type="hidden" id="fav-image-input">
-            <input type="hidden" id="fav-guide-id-input">
-            <input type="hidden" id="fav-type-input" value="url">
-            <button class="modal-btn-primary" onclick="submitAddFavorite()">Speichern</button>
-            <button class="modal-btn-secondary" onclick="closeModal('modal-add-fav')">Abbrechen</button>
         </div>
     </div>
 
@@ -220,10 +224,10 @@
     <div class="modal-overlay" id="modal-filter" onclick="closeModal('modal-filter')">
         <div class="modal-sheet bottom-sheet" onclick="event.stopPropagation()">
             <div class="modal-handle"></div>
-            <h3 class="sheet-title">Suche Filtern</h3>
+            <h3 class="sheet-title">Sender filtern</h3>
             
             <div style="margin-bottom: 16px;">
-                <label style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:4px; display:block;">Land</label>
+                <label style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:8px; display:block;">Land</label>
                 <select id="filter-country" class="modal-input" style="appearance:none;">
                     <option value="">Alle Länder</option>
                     <option value="CH">Schweiz</option>
@@ -237,7 +241,7 @@
             </div>
             
             <div style="margin-bottom: 24px;">
-                <label style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:4px; display:block;">Sprache</label>
+                <label style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:8px; display:block;">Sprache</label>
                 <select id="filter-language" class="modal-input" style="appearance:none;">
                     <option value="">Alle Sprachen</option>
                     <option value="german">Deutsch</option>
@@ -247,12 +251,12 @@
                 </select>
             </div>
             
-            <button class="modal-btn-primary" onclick="applyFilters()">Anwenden</button>
+            <button class="modal-btn-primary" onclick="applyFilters()">Ergebnisse anzeigen</button>
         </div>
     </div>
 
     <div class="toast" id="toast"></div>
 
-    <script src="static/js/app.js?v=4"></script>
+    <script src="static/js/app.js?v=5"></script>
 </body>
 </html>

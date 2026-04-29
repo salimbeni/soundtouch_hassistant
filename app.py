@@ -5,6 +5,8 @@ from radio_browser import RadioBrowser
 from tunein_api import TuneInAPI
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+
 manager = SoundTouchManager()
 radio_api = RadioBrowser()
 tunein_api = TuneInAPI()
@@ -24,9 +26,15 @@ def start_discovery():
     except Exception as e:
         print(f"Discovery error: {e}")
 
+from flask import make_response
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    resp = make_response(render_template('index.html'))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '-1'
+    return resp
 
 # Static file serving override for Ingress if needed? 
 # Flask usually handles this if relative paths are used in HTML.

@@ -156,15 +156,24 @@ function switchView(viewName) {
 /* --- Device Selector Modal --- */
 function openDeviceSelector() {
     const list = document.getElementById('device-list');
-    list.innerHTML = state.devices.map(d => `
-        <div class="sheet-item" onclick="selectDevice('${d.id}')">
-            <div>
-                <div style="font-weight: 600; margin-bottom: 2px;">${d.name}</div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary);">${d.is_offline ? 'Offline' : (d.source || 'Bereit')}</div>
+    list.innerHTML = state.devices.map(d => {
+        const isSelected = state.selectedDeviceId === d.id;
+        const stateText = d.is_offline ? 'Offline' : (d.source === 'STANDBY' ? 'Standby' : (d.source || 'Bereit'));
+        return `
+        <div class="sheet-item ${isSelected ? 'selected' : ''}" onclick="selectDevice('${d.id}')">
+            <div class="sheet-item-icon">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 2v20h10V2H7zm4 17a2 2 0 110-4 2 2 0 010 4zm0-6a2 2 0 110-4 2 2 0 010 4z"/></svg>
             </div>
-            ${state.selectedDeviceId === d.id ? '<div style="color:var(--accent);">✓</div>' : ''}
+            <div class="sheet-item-content">
+                <div class="sheet-item-title">${d.name}</div>
+                <div class="sheet-item-subtitle">${stateText}</div>
+            </div>
+            ${isSelected ? `
+            <div class="sheet-item-check">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>` : ''}
         </div>
-    `).join('');
+    `}).join('');
     
     document.getElementById('modal-device-selector').classList.add('open');
 }
@@ -276,22 +285,68 @@ function updatePlayerView() {
 
     const np = device.now_playing || {};
     const isPlaying = isDevicePlaying(device);
+    
+    const trackName = state.isLoadingStream && state.pendingStreamTitle ? state.pendingStreamTitle : (np.track || device.source || 'Bereit');
+    const artistName = np.artist || (isPlaying ? 'Läuft' : 'Keine Wiedergabe');
+    const hasArt = np.art && np.art !== 'IMAGE_PRESENT';
 
-    document.getElementById('player-track-name').textContent = state.isLoadingStream && state.pendingStreamTitle ? state.pendingStreamTitle : (np.track || device.source || 'Bereit');
-    document.getElementById('player-artist-name').textContent = np.artist || (isPlaying ? 'Läuft' : '');
+    // Update Hero Player (Startseite)
+    document.getElementById('hero-track').textContent = trackName;
+    document.getElementById('hero-artist').textContent = artistName;
 
-    const playBtn = document.getElementById('player-play-btn');
-    if (playBtn) playBtn.innerHTML = isPlaying ? '⏸' : '▶';
+    const heroArt = document.getElementById('hero-art');
+    const heroPlaceholder = document.getElementById('hero-art-placeholder');
+    const dynamicBg = document.getElementById('dynamic-bg');
+    
+    if (hasArt) {
+        heroArt.src = np.art;
+        heroArt.classList.remove('hidden');
+        heroPlaceholder.style.display = 'none';
+        dynamicBg.style.backgroundImage = `url(${np.art})`;
+    } else {
+        heroArt.classList.add('hidden');
+        heroPlaceholder.style.display = 'block';
+        dynamicBg.style.backgroundImage = 'none';
+    }
+
+    // Play/Pause Icons
+    const playIcon = document.getElementById('icon-play');
+    const pauseIcon = document.getElementById('icon-pause');
+    if (isPlaying) {
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'block';
+    } else {
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+    }
 
     const skippable = ['SPOTIFY', 'BLUETOOTH', 'AIRPLAY', 'STORED_MUSIC'].includes(device.source);
-    document.getElementById('player-prev-btn').style.display = skippable ? 'block' : 'none';
-    document.getElementById('player-next-btn').style.display = skippable ? 'block' : 'none';
+    document.getElementById('hero-prev').style.display = skippable ? 'block' : 'none';
+    document.getElementById('hero-next').style.display = skippable ? 'block' : 'none';
 
     if (!state.volumeDragging) {
-        document.getElementById('volume-slider-fill').style.width = (device.volume || 0) + '%';
+        document.getElementById('hero-volume-fill').style.width = (device.volume || 0) + '%';
     }
     
-    document.getElementById('player-volume-icon').textContent = device.muted ? '🔇' : '🔊';
+    // Update Floating Mini Player (for Finden & Settings views)
+    const floatingPlayer = document.getElementById('floating-player');
+    if (state.currentView !== 'startseite') {
+        floatingPlayer.style.display = 'flex';
+        document.getElementById('floating-title').textContent = trackName;
+        document.getElementById('floating-artist').textContent = artistName;
+        
+        const floatArt = document.getElementById('floating-art');
+        if (hasArt) {
+            floatArt.src = np.art;
+            floatArt.style.display = 'block';
+        } else {
+            floatArt.style.display = 'none';
+        }
+        
+        document.getElementById('floating-play').textContent = isPlaying ? '⏸' : '▶';
+    } else {
+        floatingPlayer.style.display = 'none';
+    }
 }
 
 function playerPlayPause() {
@@ -314,7 +369,7 @@ function togglePower() {
 
 /* --- Volume Slider --- */
 function initVolumeSlider() {
-    const track = document.getElementById('volume-slider-track');
+    const track = document.getElementById('hero-volume-track');
     if (!track) return;
 
     let isDragging = false;
@@ -325,7 +380,7 @@ function initVolumeSlider() {
         let ratio = (clientX - rect.left) / rect.width;
         ratio = Math.max(0, Math.min(1, ratio));
         const vol = Math.round(ratio * 100);
-        document.getElementById('volume-slider-fill').style.width = vol + '%';
+        document.getElementById('hero-volume-fill').style.width = vol + '%';
         return vol;
     }
 
@@ -338,7 +393,7 @@ function initVolumeSlider() {
     const stopDrag = () => {
         if (isDragging) {
             isDragging = false; state.volumeDragging = false;
-            const vol = Math.round(parseFloat(document.getElementById('volume-slider-fill').style.width));
+            const vol = Math.round(parseFloat(document.getElementById('hero-volume-fill').style.width));
             const d = getSelectedDevice();
             if (d) apiControl(d.id, 'volume', vol);
         }
